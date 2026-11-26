@@ -1717,7 +1717,9 @@ details[open] > summary::after { content: "\2212"; }
       '<section><h2>Professional services</h2><article class="card">' +
         '<ul class="plain check">' + P.professionalServices.map(function (s) {
           return '<li>' + esc(s) + '</li>';
-        }).join('') + '</ul></article></section>';
+        }).join('') + '</ul>' +
+        '<div class="ev-actions"><a class="btn btn-gold btn-sm" href="https://tinyurl.com/bdzh26mr" target="_blank" rel="noopener noreferrer">Evidence of judging &amp; reviewing &nearr;</a></div>' +
+        '</article></section>';
   }
 
   function vCV() {
