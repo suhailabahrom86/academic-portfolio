@@ -882,6 +882,123 @@ details[open] > summary::after { content: "\2212"; }
 .innov-arrow { display: inline-block; transition: transform .25s ease; }
 .innov-btn:hover .innov-arrow, .innov-btn:focus-visible .innov-arrow { animation: icon-bob .6s ease-in-out infinite alternate; }
 
+/* ---------- Gallery ---------- */
+.nav-ico { display: inline-grid; place-items: center; width: 18px; height: 18px; flex: none; color: var(--gold); margin-right: -2px; }
+.nav-ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.gal-wrap { position: relative; }
+.gal-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px;
+  margin: 0 0 22px; padding: 12px 18px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 8px 22px rgba(11, 20, 55, .06);
+}
+.gal-count { font-weight: 600; color: var(--ink); font-size: .95rem; }
+.gal-count b { font-family: var(--display, inherit); font-size: 1.35rem; color: var(--gold-deep, #B8912A); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.gal-hint { color: var(--muted); font-size: .88rem; }
+
+/* Masonry: CSS columns keep every photo at its own aspect ratio (no cropping, no fixed heights) */
+.gal-grid { column-width: 280px; column-gap: 18px; }
+.gal-item {
+  position: relative; break-inside: avoid; margin: 0 0 18px; border-radius: 18px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0 10px 26px rgba(11, 20, 55, .10);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .7s cubic-bezier(.2, .7, .2, 1), transform .7s cubic-bezier(.2, .7, .2, 1), box-shadow .35s ease;
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.gal-item.in { opacity: 1; transform: none; }
+.gal-item.in:hover { transform: translateY(-5px); box-shadow: 0 22px 40px rgba(11, 20, 55, .20); transition-delay: 0ms; }
+
+/* Animated gold border: a gradient band slides around the card on hover */
+.gal-item::after {
+  content: ""; position: absolute; inset: -1px; border-radius: 19px; padding: 2px; pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, var(--gold) 50%, transparent 70%);
+  background-size: 250% 100%; background-position: 100% 0;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .4s ease;
+}
+.gal-item:hover::after, .gal-item:focus-within::after { opacity: 1; animation: gal-gold 2.6s linear infinite; }
+@keyframes gal-gold { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+.gal-btn { display: block; width: 100%; padding: 0; margin: 0; border: 0; background: none; cursor: zoom-in; border-radius: 18px; overflow: hidden; }
+.gal-btn img { display: block; width: 100%; height: auto; border-radius: 18px; background: var(--ice, #F5F7FC); }
+.gal-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.gal-zoom {
+  position: absolute; right: 12px; bottom: 12px; width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--midnight, #0B1437), var(--blue, #315EE7));
+  box-shadow: inset 0 0 0 1px rgba(212, 175, 55, .7), 0 8px 18px rgba(0, 0, 0, .3);
+  opacity: 0; transform: scale(.6) rotate(-20deg);
+  transition: opacity .35s ease, transform .45s cubic-bezier(.2, .9, .3, 1.3);
+}
+.gal-zoom svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.gal-item:hover .gal-zoom, .gal-btn:focus-visible .gal-zoom { opacity: 1; transform: none; }
+@media (hover: none) { .gal-zoom { opacity: .9; transform: none; } }
+
+/* Full-screen lightbox */
+body.lb-open { overflow: hidden; }
+.lb {
+  position: fixed; inset: 0; z-index: 200; opacity: 0; visibility: hidden;
+  background: radial-gradient(ellipse at 50% 35%, #16234F 0%, #070E26 72%);
+  transition: opacity .35s ease, visibility .35s ease;
+}
+.lb.open { opacity: 1; visibility: visible; }
+.lb::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 15% 85%, rgba(212, 175, 55, .12), transparent 40%);
+}
+.lb-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 74px 88px 84px; touch-action: none; user-select: none; }
+.lb-img {
+  max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+  border-radius: 12px; box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+  transition: transform .28s cubic-bezier(.2, .7, .2, 1), opacity .3s ease;
+  transform-origin: center center; will-change: transform;
+}
+.lb-img.swap { opacity: 0; }
+.lb-btn {
+  position: absolute; width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid rgba(212, 175, 55, .55); background: rgba(11, 20, 55, .65); color: #fff;
+  font-size: 1.6rem; line-height: 1; cursor: pointer; backdrop-filter: blur(6px);
+  transition: background .25s ease, color .25s ease, transform .25s ease, border-color .25s ease;
+}
+.lb-btn:hover, .lb-btn:focus-visible { background: var(--gold); color: var(--midnight, #0B1437); border-color: var(--gold); }
+.lb-close { top: 18px; right: 18px; font-size: 1.9rem; }
+.lb-prev { left: 18px; top: 50%; margin-top: -25px; }
+.lb-next { right: 18px; top: 50%; margin-top: -25px; }
+.lb-prev:hover, .lb-next:hover { transform: scale(1.08); }
+.lb-bar {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 14px; padding: 8px 8px 8px 20px; border-radius: 999px; white-space: nowrap;
+  background: rgba(11, 20, 55, .72); border: 1px solid rgba(212, 175, 55, .4); color: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .35);
+}
+.lb-count { font-weight: 600; letter-spacing: .04em; font-variant-numeric: tabular-nums; font-size: .92rem; }
+.lb-tools { display: inline-flex; align-items: center; gap: 6px; }
+.lb-tools button {
+  min-width: 36px; height: 36px; padding: 0 10px; border-radius: 999px; border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .1); color: #fff; font-weight: 600; font-size: .9rem; font-family: inherit;
+  transition: background .25s ease, color .25s ease;
+}
+.lb-tools button:hover, .lb-tools button:focus-visible { background: var(--gold); color: var(--midnight, #0B1437); }
+
+@media (max-width: 600px) {
+  .lb-stage { padding: 62px 10px 96px; }
+  .lb-btn { width: 42px; height: 42px; font-size: 1.35rem; }
+  .lb-prev { left: 8px; } .lb-next { right: 8px; }
+  .lb-close { top: 10px; right: 10px; }
+  .lb-bar { bottom: 12px; padding-left: 14px; gap: 8px; }
+  .gal-hint { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gal-item { opacity: 1; transform: none; transition: none; }
+  .gal-item:hover, .gal-item.in:hover { transform: none; }
+  .gal-item:hover::after, .gal-item:focus-within::after { animation: none; }
+  .lb, .lb-img, .gal-zoom { transition: none; }
+}
+
 </style>
 </head>
 <body>
@@ -1205,6 +1322,97 @@ details[open] > summary::after { content: "\2212"; }
       }
     ],
 
+    gallery: [
+      'WhatsApp Image 2026-11-28 at 10.13.58 AM (1).jpeg',
+      'WhatsApp Image 2026-11-28 at 10.13.58 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.13.59 AM (1).jpeg',
+      'WhatsApp Image 2026-11-28 at 10.13.59 AM (2).jpeg',
+      'WhatsApp Image 2026-11-28 at 10.13.59 AM (3).jpeg',
+      'WhatsApp Image 2026-11-28 at 10.13.59 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.18.06 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.31.07 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.31.35 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.31.45 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.32.49 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.33.45 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.34.24 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.42.22 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.42.44 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.43.47 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.43.56 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.45.00 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.45.17 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.45.26 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.46.11 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.46.29 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.46.39 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.46.48 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.48.32 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.48.59 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.49.59 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.50.18 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.50.53 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.52.04 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.52.45 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.52.55 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.53.29 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.53.50 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.54.12 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.56.12 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.57.03 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.58.26 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.58.44 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.58.52 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.59.11 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.59.23 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.59.32 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 10.59.43 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.00.01 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.05.18 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.05.33 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.06.26 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.06.50 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.07.23 AM (1).jpeg',
+      'WhatsApp Image 2026-11-28 at 11.07.23 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.07.34 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.08.08 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.08.37 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.09.20 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.09.57 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.10.07 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.10.33 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.10.52 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.11.03 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.11.21 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.11.27 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.12.20 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.12.42 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.12.45 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.13.08 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.13.30 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.13.37 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.13.44 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.14.19 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.14.26 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.14.51 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.15.05 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.15.19 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.15.33 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.15.41 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.15.52 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.16.24 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.16.37 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.17.22 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.17.30 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.17.59 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.18.22 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.18.46 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.20.53 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.23.59 AM.jpeg',
+      'WhatsApp Image 2026-11-28 at 11.24.00 AM (1).jpeg',
+      'WhatsApp Image 2026-11-28 at 11.24.00 AM.jpeg'
+    ],
+
     /* Publications: journal articles, conference papers and books as listed by the author (all 'published').
        Author lists are shown only where they were supplied. */
     publications: [
@@ -1384,7 +1592,8 @@ details[open] > summary::after { content: "\2212"; }
     { id: 'teaching', no: '03', label: 'Teaching & Innovation' },
     { id: 'research', no: '04', label: 'Research & Publications' },
     { id: 'achievements', no: '05', label: 'Achievements & Leadership' },
-    { id: 'cv', no: '06', label: 'CV & Evidence' }
+    { id: 'cv', no: '06', label: 'CV & Evidence' },
+    { id: 'gallery', no: '07', label: 'Gallery', icon: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5.2-5.2a1.2 1.2 0 0 0-1.7 0L6 19"/></svg>' }
   ];
 
   var ACH = P.achievements;
@@ -1434,7 +1643,8 @@ details[open] > summary::after { content: "\2212"; }
       teaching: 'Courses taught and educational innovation projects, with details shown where sources support them.',
       research: 'A searchable library of journal articles, conference papers and books.',
       achievements: 'A searchable record of ' + ACH.length + ' competitions and ' + AWARDS + ' awards, with leadership roles.',
-      cv: 'Printable recruitment profile, evidence status and contact details.'
+      cv: 'Printable recruitment profile, evidence status and contact details.',
+      gallery: 'Photographs from academic, teaching and professional activities.'
     };
     var cards = NAV.slice(1).map(function (n) {
       return '<a class="card card-lift nav-card" href="#/' + n.id + '"><span class="num">' + n.no + '</span>' +
@@ -1749,6 +1959,202 @@ details[open] > summary::after { content: "\2212"; }
       '</section>';
   }
 
+
+  /* ---------- Gallery (88 photographs, original files, never edited) ---------- */
+  function vGallery() {
+    var G = P.gallery;
+    var items = G.map(function (name, i) {
+      return '<figure class="gal-item" style="--i:' + (i % 8) + '">' +
+        '<button type="button" class="gal-btn" data-act="lb" data-index="' + i + '" aria-label="Open photograph ' + (i + 1) + ' of ' + G.length + '">' +
+          '<img src="Gallery/' + encodeURIComponent(name) + '" alt="Photograph ' + (i + 1) + ' from the portfolio gallery" loading="lazy" decoding="async" width="600" height="800">' +
+          '<span class="gal-zoom" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/></svg></span>' +
+        '</button></figure>';
+    }).join('');
+    return pageHead('07', 'Gallery', 'Capturing Moments of Academic Excellence, Innovation & Professional Engagement') +
+      '<section class="gal-wrap">' +
+        '<div class="gal-bar"><span class="gal-count"><b data-count="' + G.length + '">' + G.length + '</b> photographs</span>' +
+        '<span class="gal-hint">Tap any photograph to view it full screen</span></div>' +
+        '<div class="gal-grid">' + items + '</div>' +
+      '</section>';
+  }
+
+  var galObserver = ('IntersectionObserver' in window)
+    ? new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('in'); galObserver.unobserve(en.target); }
+        });
+      }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' })
+    : null;
+
+  function afterGallery() {
+    $$('.gal-item').forEach(function (el) {
+      if (REDUCED || !galObserver) el.classList.add('in');
+      else galObserver.observe(el);
+    });
+  }
+
+  var LB = { index: 0, scale: 1, tx: 0, ty: 0, opener: null, ptrs: {}, pinch0: 0, scale0: 1, last: null, swipeDx: 0, lastTap: 0 };
+
+  function lbSrc(i) { return 'Gallery/' + encodeURIComponent(P.gallery[i]); }
+  function lbNode() { return document.getElementById('lightbox'); }
+
+  function lbApply() {
+    var img = document.getElementById('lb-img');
+    if (!img) return;
+    var stage = document.getElementById('lb-stage');
+    var maxX = (LB.scale - 1) * stage.clientWidth / 2, maxY = (LB.scale - 1) * stage.clientHeight / 2;
+    LB.tx = Math.max(-maxX, Math.min(maxX, LB.tx));
+    LB.ty = Math.max(-maxY, Math.min(maxY, LB.ty));
+    img.style.transform = 'translate(' + LB.tx + 'px,' + LB.ty + 'px) scale(' + LB.scale + ')';
+    img.style.cursor = LB.scale > 1 ? 'grab' : 'zoom-in';
+    document.getElementById('lb-fit').textContent = LB.scale > 1 ? Math.round(LB.scale * 100) + '%' : 'Fit';
+  }
+
+  function lbZoom(s) {
+    LB.scale = Math.max(1, Math.min(4, s));
+    if (LB.scale === 1) { LB.tx = 0; LB.ty = 0; }
+    lbApply();
+  }
+
+  function lbReset() { LB.scale = 1; LB.tx = 0; LB.ty = 0; lbApply(); }
+
+  function lbShow(i) {
+    var n = P.gallery.length;
+    LB.index = (i + n) % n;
+    var img = document.getElementById('lb-img');
+    img.classList.add('swap');
+    img.onload = function () { img.classList.remove('swap'); };
+    img.alt = 'Photograph ' + (LB.index + 1) + ' of ' + n;
+    img.src = lbSrc(LB.index);
+    document.getElementById('lb-count').textContent = (LB.index + 1) + ' / ' + n;
+    lbReset();
+    var next = new Image(); next.src = lbSrc((LB.index + 1) % n);
+  }
+
+  function lbOpen(i, opener) {
+    ensureLightbox();
+    LB.opener = opener || null;
+    var d = lbNode();
+    d.classList.add('open');
+    d.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lb-open');
+    lbShow(i);
+    setTimeout(function () { document.querySelector('#lightbox .lb-close').focus(); }, 60);
+  }
+
+  function lbClose() {
+    var d = lbNode();
+    if (!d || !d.classList.contains('open')) return;
+    d.classList.remove('open');
+    d.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lb-open');
+    if (LB.opener && LB.opener.focus) LB.opener.focus({ preventScroll: true });
+  }
+
+  function lbStep(dir) { lbShow(LB.index + dir); }
+
+  function ensureLightbox() {
+    if (lbNode()) return;
+    var d = document.createElement('div');
+    d.id = 'lightbox';
+    d.className = 'lb';
+    d.setAttribute('role', 'dialog');
+    d.setAttribute('aria-modal', 'true');
+    d.setAttribute('aria-label', 'Photograph viewer');
+    d.setAttribute('aria-hidden', 'true');
+    d.innerHTML =
+      '<div class="lb-stage" id="lb-stage"><img class="lb-img" id="lb-img" alt="" draggable="false"></div>' +
+      '<button type="button" class="lb-btn lb-close" data-lb="close" aria-label="Close viewer">&times;</button>' +
+      '<button type="button" class="lb-btn lb-prev" data-lb="prev" aria-label="Previous photograph">&#8249;</button>' +
+      '<button type="button" class="lb-btn lb-next" data-lb="next" aria-label="Next photograph">&#8250;</button>' +
+      '<div class="lb-bar"><span class="lb-count" id="lb-count"></span>' +
+        '<span class="lb-tools">' +
+          '<button type="button" data-lb="out" aria-label="Zoom out">&minus;</button>' +
+          '<button type="button" id="lb-fit" data-lb="fit" aria-label="Reset zoom">Fit</button>' +
+          '<button type="button" data-lb="in" aria-label="Zoom in">+</button>' +
+        '</span></div>';
+    document.body.appendChild(d);
+
+    d.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-lb]') : null;
+      if (!b) { if (e.target.id === 'lb-stage' || e.target === d) lbClose(); return; }
+      var a = b.getAttribute('data-lb');
+      if (a === 'close') lbClose();
+      else if (a === 'prev') lbStep(-1);
+      else if (a === 'next') lbStep(1);
+      else if (a === 'in') lbZoom(LB.scale * 1.4);
+      else if (a === 'out') lbZoom(LB.scale / 1.4);
+      else if (a === 'fit') lbReset();
+    });
+
+    var stage = document.getElementById('lb-stage');
+    stage.addEventListener('wheel', function (e) {
+      if (!lbNode().classList.contains('open')) return;
+      e.preventDefault();
+      lbZoom(LB.scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
+    }, { passive: false });
+
+    stage.addEventListener('pointerdown', function (e) {
+      LB.ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(LB.ptrs);
+      if (ids.length === 2) {
+        var a = LB.ptrs[ids[0]], b = LB.ptrs[ids[1]];
+        LB.pinch0 = Math.hypot(a.x - b.x, a.y - b.y);
+        LB.scale0 = LB.scale;
+      }
+      LB.last = { x: e.clientX, y: e.clientY, moved: 0 };
+      LB.swipeDx = 0;
+    });
+
+    stage.addEventListener('pointermove', function (e) {
+      var p = LB.ptrs[e.pointerId];
+      if (!p) return;
+      var ids = Object.keys(LB.ptrs);
+      var dx = e.clientX - p.x, dy = e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      if (ids.length === 2) {
+        var a = LB.ptrs[ids[0]], b = LB.ptrs[ids[1]];
+        var dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (LB.pinch0) lbZoom(LB.scale0 * dist / LB.pinch0);
+        return;
+      }
+      LB.last.moved += Math.abs(dx) + Math.abs(dy);
+      if (LB.scale > 1) { LB.tx += dx; LB.ty += dy; lbApply(); }
+      else { LB.swipeDx += dx; }
+    });
+
+    function endPointer(e) {
+      if (!LB.ptrs[e.pointerId]) return;
+      var wasSingle = Object.keys(LB.ptrs).length === 1;
+      delete LB.ptrs[e.pointerId];
+      if (!wasSingle) { LB.pinch0 = 0; return; }
+      if (e.type === 'pointerup' && LB.scale === 1 && Math.abs(LB.swipeDx) > 60) {
+        lbStep(LB.swipeDx < 0 ? 1 : -1);
+      } else if (e.type === 'pointerup' && LB.last && LB.last.moved < 8) {
+        var now = Date.now();
+        if (now - LB.lastTap < 320) { if (LB.scale > 1) lbReset(); else lbZoom(2.5); LB.lastTap = 0; }
+        else LB.lastTap = now;
+      }
+      LB.swipeDx = 0;
+    }
+    stage.addEventListener('pointerup', endPointer);
+    stage.addEventListener('pointercancel', endPointer);
+    stage.addEventListener('dblclick', function () { if (LB.scale > 1) lbReset(); else lbZoom(2.5); });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var d = lbNode();
+    if (!d || !d.classList.contains('open')) return;
+    if (e.key === 'Escape') lbClose();
+    else if (e.key === 'ArrowRight') lbStep(1);
+    else if (e.key === 'ArrowLeft') lbStep(-1);
+    else if (e.key === '+' || e.key === '=') lbZoom(LB.scale * 1.4);
+    else if (e.key === '-') lbZoom(LB.scale / 1.4);
+    else if (e.key === '0') lbReset();
+    else return;
+    e.preventDefault();
+  });
+
   /* ---------- Printable recruitment profile ---------- */
   function buildPrint() {
     var o = P.owner;
@@ -1791,8 +2197,8 @@ details[open] > summary::after { content: "\2212"; }
   }
 
   /* ---------- Router and chrome ---------- */
-  var VIEWS = { home: vHome, profile: vProfile, teaching: vTeaching, research: vResearch, achievements: vAchievements, cv: vCV };
-  var AFTER = { research: renderPubs, achievements: renderAch };
+  var VIEWS = { home: vHome, profile: vProfile, teaching: vTeaching, research: vResearch, achievements: vAchievements, cv: vCV, gallery: vGallery };
+  var AFTER = { research: renderPubs, achievements: renderAch, gallery: afterGallery };
 
   function currentRoute() {
     var h = (window.location.hash || '').replace(/^#\/?/, '');
@@ -1816,7 +2222,7 @@ details[open] > summary::after { content: "\2212"; }
       el.style.setProperty('--d', (i * 90) + 'ms');
     });
     $$('.view > section').forEach(function (s) {
-      if (s.classList.contains('hero') || REDUCED) return;
+      if (s.classList.contains('hero') || s.classList.contains('gal-wrap') || REDUCED) return;
       s.classList.add('reveal');
       if (revealObserver) revealObserver.observe(s);
       else s.classList.add('in');
@@ -1847,7 +2253,8 @@ details[open] > summary::after { content: "\2212"; }
   function renderNav() {
     $('#nav').innerHTML = NAV.map(function (n) {
       return '<a class="nav-link" href="#/' + n.id + '" data-id="' + n.id + '">' +
-        '<span class="nav-no">' + n.no + '</span><span class="nav-label">' + esc(n.label) + '</span></a>';
+        '<span class="nav-no">' + n.no + '</span>' + (n.icon ? '<span class="nav-ico">' + n.icon + '</span>' : '') +
+        '<span class="nav-label">' + esc(n.label) + '</span></a>';
     }).join('');
   }
 
@@ -1960,6 +2367,7 @@ details[open] > summary::after { content: "\2212"; }
     else if (act === 'top') window.scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
     else if (act === 'reset-pub') { pubState = freshPub(); renderCurrent(); }
     else if (act === 'reset-ach') { achState = freshAch(); renderCurrent(); }
+    else if (act === 'lb') lbOpen(parseInt(el.getAttribute('data-index'), 10), el);
   });
 
   document.addEventListener('input', onFilter);
